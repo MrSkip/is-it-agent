@@ -1,27 +1,36 @@
-export type Verdict = "simple-first" | "single-call" | "workflow" | "agent";
+export type Verdict = "single-call" | "workflow" | "agent";
 
 export type Answer = "yes" | "no";
 
 export type Answers = Record<number, Answer>;
+
+export type Guidance = {
+  title: string;
+  body: string;
+  trace: string;
+};
 
 export type Recommendation = {
   verdict: Verdict;
   title: string;
   trace: string;
   rationale: string;
+  guidance: Guidance[];
 };
 
 export function recommend(answers: Answers): Recommendation {
-  if (answers[8] === "no") {
-    return {
-      verdict: "simple-first",
-      title: "Build the simple version first",
-      trace: "You said no to Q8 — you haven't shipped the simple version yet.",
-      rationale:
-        "Q8 is the load-bearing question. Every other question is a prediction about your problem; Q8 is evidence. Ship the single-call or workflow version, watch what breaks in real usage, then come back to the rest of the questions. Predictions are wrong all the time; shipped code isn't.",
-    };
-  }
+  const shape = problemShape(answers);
+  return { ...shape, guidance: buildGuidance(answers, shape.verdict) };
+}
 
+type Shape = {
+  verdict: Verdict;
+  title: string;
+  trace: string;
+  rationale: string;
+};
+
+function problemShape(answers: Answers): Shape {
   if (answers[3] === "yes") {
     return {
       verdict: "single-call",
@@ -48,7 +57,7 @@ export function recommend(answers: Answers): Recommendation {
       title: "Agent",
       trace: `You said ${parts.join(" and ")} — that's an agent shape.`,
       rationale:
-        "An agent is worth the cost when the path branches based on intermediate results, the tool order isn't predictable in advance, and stopping is itself a decision the system has to make. Use an established loop (act → observe → decide), and budget upfront for evals and observability — they're not optional for agents.",
+        `An agent runs a loop: act → observe → decide → repeat until done. It's worth the cost when the path branches based on intermediate results, the tool order isn't predictable in advance, and stopping is itself a decision the system has to make. One thing to double-check: if your "dynamic" behavior is really a top-level classifier routing to fixed prompt chains, that's a routing workflow — not an agent. Budget upfront for evals and observability; they're not optional here.`,
     };
   }
 
@@ -59,11 +68,33 @@ export function recommend(answers: Answers): Recommendation {
     parts.push(`no to ${part2No.map((id) => `Q${id}`).join(", ")}`);
   return {
     verdict: "workflow",
-    title: "Workflow with LLM calls",
+    title: "Workflow",
     trace: parts.length
       ? `You said ${parts.join(" and ")} — that's a workflow, not an agent.`
       : "Mixed signals, but no strong agent case — start with a workflow.",
     rationale:
       "Chain LLM calls in a fixed order. Each step has a known input and a known output. You get most of the leverage of LLMs with very little of the cost or instability of an agent. Escalate to an agent only when you can point at a specific thing the workflow can't do.",
   };
+}
+
+function buildGuidance(answers: Answers, verdict: Verdict): Guidance[] {
+  const items: Guidance[] = [];
+
+  if (answers[8] === "no" && verdict !== "single-call") {
+    items.push({
+      title: "Start with the simple version first",
+      body: `Whatever the shape of your problem turns out to be, ship the smallest viable version — a single prompt or a short chain — and watch what real usage breaks. "Find the simplest solution possible, and only increase complexity when needed" is the most-cited principle in the agent literature. Predictions about the problem are wrong all the time; shipped code isn't.`,
+      trace: "You said no to Q8 — the simpler version hasn't been ruled out yet.",
+    });
+  }
+
+  if (answers[9] === "no") {
+    items.push({
+      title: "Add human-in-the-loop for irreversible actions",
+      body: `If a wrong action needs human cleanup, put an approval step in front of every such action — regardless of whether you build a workflow or an agent. OWASP's 2026 Top 10 for Agentic Applications and most public 2025–2026 production post-mortems trace back to this gap. Bound autonomy explicitly: list the irreversible actions, and require a human (or a separate verifier) to confirm each one.`,
+      trace: "You said no to Q9 — wrong actions aren't reversible without cleanup.",
+    });
+  }
+
+  return items;
 }

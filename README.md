@@ -35,7 +35,7 @@ No environment variables, no database, no API keys. The recommendation logic run
 
 ## Structure
 
-- `lib/questions.ts` — the eight questions and their examples
-- `lib/recommend.ts` — the decision logic (Q8 = no overrides everything, Q3 = yes routes to single-call, then a 3-vs-3 majority decides agent vs workflow)
+- `lib/questions.ts` — the nine questions and their examples
+- `lib/recommend.ts` — the decision logic. Q3 = yes routes to single-call; otherwise a 3-vs-3 majority between Part 2 (Q5–Q7) and Part 1 (Q1, Q2, Q4) decides agent vs workflow. Q8 ("ship simple first") and Q9 ("blast radius") are guidance overlays appended to the verdict, not terminal answers
 - `app/page.tsx` — landing
 - `app/quiz/page.tsx` — quiz and result, all client-side state

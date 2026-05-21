@@ -18,9 +18,9 @@ export const questions: Question[] = [
   {
     id: 2,
     part: 1,
-    text: "Is the set of user inputs bounded — i.e., users will mostly do a small number of known things?",
+    text: "Do users mostly want one of a small number of known outcomes, each with a known happy path?",
     example:
-      `A support bot that handles "where's my order," "return this item," and "change my address." Not "plan my European vacation."`,
+      `A support bot where the realistic outcomes are "tell me where my order is," "process a return," and "update my address." Each has a known happy path. Not: "plan my European vacation," where the outcome space is wide-open.`,
   },
   {
     id: 3,
@@ -32,16 +32,16 @@ export const questions: Question[] = [
   {
     id: 4,
     part: 1,
-    text: "Is the output predictable in shape — same fields, same format, every time?",
+    text: "At each step, can you specify the output schema in advance — fixed fields, fixed format?",
     example:
-      `Always returns JSON with {name, amount, due_date}. Not "sometimes a paragraph, sometimes a table, depending on the question."`,
+      `An invoice extractor always returns {vendor, amount, due_date, line_items[]}. A two-step pipeline where both steps produce JSON with known fields. Not: "sometimes a paragraph, sometimes a table, depending on what the LLM decides."`,
   },
   {
     id: 5,
     part: 2,
     text: "Does the system need to decide, based on intermediate results, what to do next?",
     example:
-      `A research assistant reads a paper, decides it needs more context, searches for related work, then decides whether to keep going or summarize. The path branches based on what it finds.`,
+      `A Deep Research agent reads a source, decides whether to search for more, decides when it has enough to write up — the path branches with every finding. (Perplexity Deep Research, OpenAI's o3 research mode, and similar systems all use this pattern.)`,
   },
   {
     id: 6,
@@ -63,5 +63,12 @@ export const questions: Question[] = [
     text: "Have you already built and shipped the simplest non-agent version and found it insufficient?",
     example:
       `You shipped a single-prompt version, watched real users use it, and identified specific failure modes a workflow couldn't fix. Not "I have a hunch we'll need an agent."`,
+  },
+  {
+    id: 9,
+    part: 2,
+    text: "If the system takes a wrong action, is it reversible without human cleanup?",
+    example:
+      `Reversible: a research agent generates a summary — if it's wrong, you re-read the source and nothing else happened. Not reversible: a trading bot submits an order, a customer-service agent sends an email, a coding agent pushes to production. Once the action happens, undoing it costs time, money, or trust.`,
   },
 ];

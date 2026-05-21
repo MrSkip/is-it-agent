@@ -167,12 +167,29 @@ function ResultView({
           {result.rationale}
         </p>
 
+        {result.guidance.length > 0 && (
+          <div className="mb-10">
+            <p className="text-sm uppercase tracking-wider text-muted mb-4">
+              Also worth flagging
+            </p>
+            <div className="space-y-6">
+              {result.guidance.map((g, i) => (
+                <div key={i} className="border-l-2 border-line pl-4">
+                  <h3 className="font-medium text-ink mb-1">{g.title}</h3>
+                  <p className="text-xs text-muted mb-3">{g.trace}</p>
+                  <p className="text-sm leading-relaxed text-muted">{g.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <details className="mb-10 group">
           <summary className="cursor-pointer text-sm text-muted hover:text-ink transition list-none flex items-center gap-2">
             <span className="inline-block transition-transform group-open:rotate-90">
               ›
             </span>
-            Show all 8 answers
+            Show all answers
           </summary>
           <ul className="mt-4 space-y-2 text-sm">
             {questions.map((q) => (
