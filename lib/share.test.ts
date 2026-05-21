@@ -114,6 +114,9 @@ describe("buildReport", () => {
     title: "Agent",
     trace: "You said yes to Q5, Q6, Q7 — that's an agent shape.",
     rationale: "An agent runs a loop: act → observe → decide → repeat.",
+    effort: "Months to ship.",
+    notThis: "Not a chatbot.",
+    commonMisread: "Most projects here are really routing workflows.",
     nextSteps: [],
     guidance: [],
   };
@@ -174,6 +177,18 @@ describe("buildReport", () => {
 
   it("omits URL line when empty string is passed", () => {
     const report = buildReport(baseResult, "");
-    expect(report.endsWith(baseResult.rationale)).toBe(true);
+    expect(report).not.toContain("http");
+    expect(report.endsWith(`Common misread: ${baseResult.commonMisread}`)).toBe(
+      true,
+    );
+  });
+
+  it("includes effort, notThis, and commonMisread", () => {
+    const report = buildReport(baseResult, "");
+    expect(report).toContain("Rough effort: Months to ship.");
+    expect(report).toContain("What this isn't: Not a chatbot.");
+    expect(report).toContain(
+      "Common misread: Most projects here are really routing workflows.",
+    );
   });
 });

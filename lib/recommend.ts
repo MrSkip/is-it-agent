@@ -15,6 +15,9 @@ export type Recommendation = {
   title: string;
   trace: string;
   rationale: string;
+  effort: string;
+  notThis: string;
+  commonMisread: string;
   nextSteps: string[];
   guidance: Guidance[];
 };
@@ -34,6 +37,12 @@ function problemShape(answers: Answers): Shape {
       trace: "You said yes to Q3 — input goes in, output comes out, done.",
       rationale:
         "Don't reach for a framework. One prompt, one call, one response. Add structured output if you need a stable shape. You can always escalate later if real usage reveals you need more.",
+      effort:
+        "Days to a couple weeks of build. Light eval (a rubric and 20–50 examples is usually enough).",
+      notThis:
+        "Not a workflow. Adding a second prompt step doesn't make it one — it makes it a slower, more fragile single-call. If you genuinely need multiple steps with their own schemas, retake the quiz with the more honest answers.",
+      commonMisread:
+        "Teams that land here often add unnecessary glue: a three-prompt \"chain\" that's really one prompt, or a \"mini-agent\" wrapper around a task the base model already handles alone. Resist — the win at this verdict is from doing less, not more.",
       nextSteps: [
         "Write the prompt in plain language, with one or two example inputs and the outputs you'd want for them.",
         "Define the output schema (Anthropic's structured outputs, OpenAI JSON schema, or a TypeScript type you parse against). Don't ask the model to \"please respond in JSON.\"",
@@ -66,6 +75,12 @@ function problemShape(answers: Answers): Shape {
       title: "Agent",
       trace,
       rationale: `An agent runs a loop: act → observe → decide → repeat until done. It's worth the cost when the path branches based on intermediate results, the tool order isn't predictable in advance, and stopping is itself a decision the system has to make. One thing to double-check: if your "dynamic" behavior is really a top-level classifier routing to fixed prompt chains, that's a routing workflow — not an agent. Budget upfront for evals and observability; they're not optional here.`,
+      effort:
+        "Months to ship a first version, plus ongoing eval and observability ops you can't skip. Plan for a dedicated owner.",
+      notThis:
+        "Not a chatbot, not a workflow with smarter prompts. An agent runs a real loop — act, observe, decide, repeat — and decides for itself when to stop. If yours doesn't, it's something else; build that something else first.",
+      commonMisread:
+        "Most projects that land here actually need a routing workflow: a classifier picks one of N fixed prompt chains. That's not an agent — and it's an order of magnitude less work. Re-check Q5 and Q6 against the negation in each question before committing.",
       nextSteps: [
         "Enumerate every tool the agent can call. For each one, mark whether it's reversible without human cleanup.",
         `Write the stopping condition explicitly: when has the agent done enough? "When the task is done" is not a stopping condition.`,
@@ -103,6 +118,12 @@ function problemShape(answers: Answers): Shape {
     title: "Workflow",
     trace,
     rationale,
+    effort:
+      "Weeks to a couple months, plus eval setup for each step (the per-step schemas give you cheap, targeted evals).",
+    notThis:
+      "Not an agent. No LLM call decides which step runs next — that's the line. If you find yourself adding \"and then the model decides…\", you've crossed into agent territory and the cost profile changes.",
+    commonMisread:
+      "Teams that land here often build it as an agent anyway because it sounds smarter, then spend months debugging non-determinism they didn't need. The fixed sequence is the point — it's what makes the system testable, cheap, and predictable.",
     nextSteps: [
       "Sketch the steps on paper before writing code. Name each step, its input, and its output. If you can't, you don't have a workflow — you have an agent in disguise.",
       "Define an explicit schema for each intermediate step. The output of step N is the input of step N+1.",

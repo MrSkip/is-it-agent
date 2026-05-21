@@ -29,6 +29,10 @@ export function buildReport(result: Recommendation, url: string): string {
   lines.push(result.trace);
   lines.push("");
   lines.push(result.rationale);
+  lines.push("");
+  lines.push(`Rough effort: ${result.effort}`);
+  lines.push(`What this isn't: ${result.notThis}`);
+  lines.push(`Common misread: ${result.commonMisread}`);
 
   if (result.nextSteps.length > 0) {
     lines.push("");

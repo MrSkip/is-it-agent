@@ -273,6 +273,33 @@ function ResultView({
           {result.rationale}
         </p>
 
+        <dl className="mb-10 space-y-5">
+          <div>
+            <dt className="text-xs uppercase tracking-wider text-muted mb-1.5">
+              Rough effort
+            </dt>
+            <dd className="text-base leading-relaxed text-ink">
+              {result.effort}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs uppercase tracking-wider text-muted mb-1.5">
+              What this isn&rsquo;t
+            </dt>
+            <dd className="text-base leading-relaxed text-ink">
+              {result.notThis}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs uppercase tracking-wider text-muted mb-1.5">
+              Common misread
+            </dt>
+            <dd className="text-base leading-relaxed text-ink">
+              {result.commonMisread}
+            </dd>
+          </div>
+        </dl>
+
         <div className="mb-10">
           <p className="text-sm uppercase tracking-wider text-muted mb-5">
             Build this first
@@ -327,6 +354,11 @@ function ResultView({
             ))}
           </ul>
         </details>
+
+        <p className="text-sm text-muted leading-relaxed mb-6">
+          Most corporate AI initiatives decompose into 3–5 tasks with different
+          verdicts. If yours is one of them, retake the quiz for each.
+        </p>
 
         <div className="flex flex-wrap gap-3">
           <button

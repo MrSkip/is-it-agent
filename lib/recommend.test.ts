@@ -86,7 +86,24 @@ describe("recommend()", () => {
       expect(r.verdict).toBe("agent");
     });
 
-    it("trace names the driving Part 2 yeses and Part 1 nos", () => {
+    it("acknowledges the lone Part 1 yes alongside agent signals", () => {
+      const r = recommend({
+        1: "yes",
+        2: "no",
+        3: "no",
+        4: "no",
+        5: "yes",
+        6: "yes",
+        7: "yes",
+        8: "yes",
+        9: "yes",
+      });
+      expect(r.verdict).toBe("agent");
+      expect(r.trace).toContain("yes to Q1 (workflow signal)");
+      expect(r.trace).toContain("yes to Q5, Q6, Q7 (agent signals)");
+    });
+
+    it("trace names the driving Part 2 yeses and Part 1 nos when no workflow signal", () => {
       const r = recommend({
         ...allNo(),
         5: "yes",
@@ -97,6 +114,7 @@ describe("recommend()", () => {
       });
       expect(r.trace).toContain("yes to Q5, Q6, Q7");
       expect(r.trace).toContain("no to Q1, Q2, Q4");
+      expect(r.trace).not.toContain("workflow signal");
     });
 
     it("rationale mentions the agent loop and the routing-workflow pitfall", () => {
@@ -331,6 +349,25 @@ describe("recommend()", () => {
     it("returns no guidance when Q8=yes and Q9=yes", () => {
       const r = recommend(answers());
       expect(r.guidance).toHaveLength(0);
+    });
+  });
+
+  describe("partial answer handling (defensive fallback)", () => {
+    it("falls back to workflow with mixed-signals trace when called with no answers", () => {
+      const r = recommend({});
+      expect(r.verdict).toBe("workflow");
+      expect(r.trace).toContain("Mixed signals");
+    });
+
+    it("falls back to workflow with mixed-signals trace when only Q3 is answered no", () => {
+      const r = recommend({ 3: "no" });
+      expect(r.verdict).toBe("workflow");
+      expect(r.trace).toContain("Mixed signals");
+    });
+
+    it("still routes to single-call when Q3 is yes even with all other answers missing", () => {
+      const r = recommend({ 3: "yes" });
+      expect(r.verdict).toBe("single-call");
     });
   });
 
