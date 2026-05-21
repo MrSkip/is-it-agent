@@ -1,6 +1,6 @@
 # Is it an agent?
 
-Eight yes/no questions to decide whether your problem actually needs an agent — or just a single LLM call or a workflow.
+Nine yes/no questions to decide whether your problem actually needs an agent — or just a single LLM call or a workflow.
 
 ## Run locally
 
@@ -28,7 +28,7 @@ No environment variables, no database, no API keys. The recommendation logic run
 
 ## Stack
 
-- Next.js 15 (App Router)
+- Next.js 16 (App Router)
 - React 19
 - Tailwind CSS v4
 - TypeScript
@@ -39,3 +39,5 @@ No environment variables, no database, no API keys. The recommendation logic run
 - `lib/recommend.ts` — the decision logic. Q3 = yes routes to single-call; otherwise a 3-vs-3 majority between Part 2 (Q5–Q7) and Part 1 (Q1, Q2, Q4) decides agent vs workflow. Q8 ("ship simple first") and Q9 ("blast radius") are guidance overlays appended to the verdict, not terminal answers
 - `app/page.tsx` — landing
 - `app/quiz/page.tsx` — quiz and result, all client-side state
+- `app/glossary/page.tsx` — glossary of terms + references for further reading
+- `lib/glossary.ts`, `lib/references.ts` — data for the glossary page

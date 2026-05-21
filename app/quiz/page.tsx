@@ -3,7 +3,21 @@
 import { useState } from "react";
 import Link from "next/link";
 import { questions, type Question } from "@/lib/questions";
-import { recommend, type Answer, type Answers } from "@/lib/recommend";
+import {
+  recommend,
+  type Answer,
+  type Answers,
+  type Verdict,
+} from "@/lib/recommend";
+
+const verdictBlurb: Record<Verdict, { slug: string; label: string }> = {
+  "single-call": {
+    slug: "single-llm-call",
+    label: "What is a single LLM call?",
+  },
+  workflow: { slug: "workflow", label: "What is a workflow?" },
+  agent: { slug: "agent", label: "What is an agent?" },
+};
 
 export default function QuizPage() {
   const [index, setIndex] = useState(0);
@@ -157,9 +171,15 @@ function ResultView({
         <p className="text-sm uppercase tracking-wider text-muted mb-3">
           Verdict
         </p>
-        <h1 className="font-serif text-5xl md:text-6xl leading-tight mb-8">
+        <h1 className="font-serif text-5xl md:text-6xl leading-tight mb-2">
           {result.title}
         </h1>
+        <Link
+          href={`/glossary#${verdictBlurb[result.verdict].slug}`}
+          className="inline-block text-sm text-muted hover:text-ink transition underline underline-offset-4 mb-8"
+        >
+          {verdictBlurb[result.verdict].label}
+        </Link>
         <p className="text-base leading-relaxed text-ink mb-6 pl-4 border-l-2 border-ink">
           {result.trace}
         </p>
@@ -218,6 +238,16 @@ function ResultView({
             Home
           </Link>
         </div>
+        <p className="text-sm text-muted mt-10 leading-relaxed">
+          Want to dig deeper?{" "}
+          <Link
+            href="/glossary"
+            className="underline underline-offset-4 hover:text-ink transition"
+          >
+            Glossary &amp; references
+          </Link>
+          .
+        </p>
       </div>
     </main>
   );

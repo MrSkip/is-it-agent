@@ -2,7 +2,7 @@ export type Verdict = "single-call" | "workflow" | "agent";
 
 export type Answer = "yes" | "no";
 
-export type Answers = Record<number, Answer>;
+export type Answers = Partial<Record<number, Answer>>;
 
 export type Guidance = {
   title: string;

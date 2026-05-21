@@ -25,6 +25,25 @@ export default function Home() {
         >
           Start →
         </Link>
+        <p className="text-sm text-muted mt-8 leading-relaxed">
+          Based on Anthropic&rsquo;s{" "}
+          <a
+            href="https://www.anthropic.com/engineering/building-effective-agents"
+            target="_blank"
+            rel="noreferrer"
+            className="underline underline-offset-4 hover:text-ink transition"
+          >
+            Building Effective Agents
+          </a>{" "}
+          (Dec 2024). New to the terms?{" "}
+          <Link
+            href="/glossary"
+            className="underline underline-offset-4 hover:text-ink transition"
+          >
+            Read the glossary
+          </Link>
+          .
+        </p>
       </div>
     </main>
   );

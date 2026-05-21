@@ -17,7 +17,7 @@ const sourceSerif = Source_Serif_4({
 export const metadata: Metadata = {
   title: "Is it an agent?",
   description:
-    "Eight yes/no questions to decide whether your problem actually needs an agent — or just a single LLM call or a workflow.",
+    "Nine yes/no questions to decide whether your problem actually needs an agent — or just a single LLM call or a workflow.",
 };
 
 export default function RootLayout({
