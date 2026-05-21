@@ -50,15 +50,21 @@ function problemShape(answers: Answers): Shape {
   const part2No = [5, 6, 7].filter((id) => answers[id] === "no");
 
   if (part2Yes.length >= 2 && part1Yes.length <= 1) {
-    const parts: string[] = [];
-    if (part1No.length)
-      parts.push(`no to ${part1No.map((id) => `Q${id}`).join(", ")}`);
-    if (part2Yes.length)
-      parts.push(`yes to ${part2Yes.map((id) => `Q${id}`).join(", ")}`);
+    const p2YesList = part2Yes.map((id) => `Q${id}`).join(", ");
+    const trace =
+      part1Yes.length > 0
+        ? `You said yes to ${part1Yes
+            .map((id) => `Q${id}`)
+            .join(
+              ", ",
+            )} (workflow signal) AND yes to ${p2YesList} (agent signals) — that's an agent shape.`
+        : `You said no to ${part1No
+            .map((id) => `Q${id}`)
+            .join(", ")} and yes to ${p2YesList} — that's an agent shape.`;
     return {
       verdict: "agent",
       title: "Agent",
-      trace: `You said ${parts.join(" and ")} — that's an agent shape.`,
+      trace,
       rationale: `An agent runs a loop: act → observe → decide → repeat until done. It's worth the cost when the path branches based on intermediate results, the tool order isn't predictable in advance, and stopping is itself a decision the system has to make. One thing to double-check: if your "dynamic" behavior is really a top-level classifier routing to fixed prompt chains, that's a routing workflow — not an agent. Budget upfront for evals and observability; they're not optional here.`,
       nextSteps: [
         "Enumerate every tool the agent can call. For each one, mark whether it's reversible without human cleanup.",
@@ -70,19 +76,33 @@ function problemShape(answers: Answers): Shape {
     };
   }
 
+  const conflict = part1Yes.length >= 2 && part2Yes.length >= 2;
+
   const parts: string[] = [];
   if (part1Yes.length)
     parts.push(`yes to ${part1Yes.map((id) => `Q${id}`).join(", ")}`);
   if (part2No.length)
     parts.push(`no to ${part2No.map((id) => `Q${id}`).join(", ")}`);
+
+  const trace = conflict
+    ? `You said yes to ${part1Yes
+        .map((id) => `Q${id}`)
+        .join(", ")} (workflow signals) AND yes to ${part2Yes
+        .map((id) => `Q${id}`)
+        .join(", ")} (agent signals) — your answers conflict.`
+    : parts.length
+      ? `You said ${parts.join(" and ")} — that's a workflow, not an agent.`
+      : "Mixed signals, but no strong agent case — start with a workflow.";
+
+  const rationale = conflict
+    ? "Your answers signal both shapes, which usually means one isn't quite right — a system can't simultaneously have fully predetermined steps and need dynamic mid-task decisions. The Part 1 yeses win the verdict: if you really can write down every step in advance, you don't need the agent loop. Re-read whichever answer felt least solid — the Part 2 yeses may be aspirational, or a Part 1 yes may be glossing over real branching. Workflow is the safer starting shape regardless; escalate later if real usage exposes a specific gap."
+    : "Chain LLM calls in a fixed order. Each step has a known input and a known output. You get most of the leverage of LLMs with very little of the cost or instability of an agent. Escalate to an agent only when you can point at a specific thing the workflow can't do.";
+
   return {
     verdict: "workflow",
     title: "Workflow",
-    trace: parts.length
-      ? `You said ${parts.join(" and ")} — that's a workflow, not an agent.`
-      : "Mixed signals, but no strong agent case — start with a workflow.",
-    rationale:
-      "Chain LLM calls in a fixed order. Each step has a known input and a known output. You get most of the leverage of LLMs with very little of the cost or instability of an agent. Escalate to an agent only when you can point at a specific thing the workflow can't do.",
+    trace,
+    rationale,
     nextSteps: [
       "Sketch the steps on paper before writing code. Name each step, its input, and its output. If you can't, you don't have a workflow — you have an agent in disguise.",
       "Define an explicit schema for each intermediate step. The output of step N is the input of step N+1.",

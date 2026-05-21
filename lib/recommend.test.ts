@@ -130,7 +130,19 @@ describe("recommend()", () => {
       expect(r.title).toBe("Workflow");
     });
 
-    it("returns workflow when Part 1 yes count > 1 (blocks agent verdict)", () => {
+    it("returns workflow when Part 2 yes count < 2", () => {
+      const r = recommend({
+        ...allNo(),
+        5: "yes",
+        8: "yes",
+        9: "yes",
+      });
+      expect(r.verdict).toBe("workflow");
+    });
+  });
+
+  describe("conflicting signals on workflow verdict", () => {
+    it("surfaces both Part 1 and Part 2 yeses when both halves vote opposite shapes", () => {
       const r = recommend({
         1: "yes",
         2: "yes",
@@ -143,16 +155,77 @@ describe("recommend()", () => {
         9: "yes",
       });
       expect(r.verdict).toBe("workflow");
+      expect(r.trace).toContain("Q1, Q2, Q4");
+      expect(r.trace).toContain("Q5, Q6");
+      expect(r.trace).toContain("conflict");
     });
 
-    it("returns workflow when Part 2 yes count < 2", () => {
+    it("rationale explains why workflow wins and prompts re-examination", () => {
       const r = recommend({
-        ...allNo(),
+        1: "yes",
+        2: "yes",
+        3: "no",
+        4: "no",
         5: "yes",
+        6: "yes",
+        7: "no",
         8: "yes",
         9: "yes",
       });
       expect(r.verdict).toBe("workflow");
+      expect(r.rationale).toContain("Re-read");
+      expect(r.rationale).toContain("Part 1");
+      expect(r.rationale).toContain("Part 2");
+    });
+
+    it("does not trigger conflict mode when only one Part 2 yes", () => {
+      const r = recommend({
+        1: "yes",
+        2: "yes",
+        3: "no",
+        4: "yes",
+        5: "yes",
+        6: "no",
+        7: "no",
+        8: "yes",
+        9: "yes",
+      });
+      expect(r.verdict).toBe("workflow");
+      expect(r.trace).not.toContain("conflict");
+    });
+
+    it("does not trigger conflict mode when only one Part 1 yes", () => {
+      const r = recommend({
+        1: "yes",
+        2: "no",
+        3: "no",
+        4: "no",
+        5: "yes",
+        6: "yes",
+        7: "no",
+        8: "yes",
+        9: "yes",
+      });
+      expect(r.verdict).toBe("agent");
+    });
+
+    it("handles maximum conflict (all Part 1 yes and all Part 2 yes)", () => {
+      const r = recommend({
+        1: "yes",
+        2: "yes",
+        3: "no",
+        4: "yes",
+        5: "yes",
+        6: "yes",
+        7: "yes",
+        8: "yes",
+        9: "yes",
+      });
+      expect(r.verdict).toBe("workflow");
+      expect(r.trace).toContain("Q1, Q2, Q4");
+      expect(r.trace).toContain("Q5, Q6, Q7");
+      expect(r.trace).toContain("conflict");
+      expect(r.rationale).toContain("Re-read");
     });
   });
 
@@ -287,6 +360,7 @@ describe("recommend()", () => {
         9: "yes",
       });
       expect(r.trace).toMatch(/Q[1247]/);
+      expect(r.trace).not.toContain("conflict");
     });
   });
 });
