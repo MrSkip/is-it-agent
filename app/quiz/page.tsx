@@ -227,19 +227,29 @@ function ResultView({
   onStartOver: () => void;
 }) {
   const result = recommend(answers);
-  const [copied, setCopied] = useState(false);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">(
+    "idle",
+  );
+
+  const url = typeof window !== "undefined" ? window.location.href : "";
+  const report = buildReport(result, url);
 
   async function handleCopy() {
-    const url = typeof window !== "undefined" ? window.location.href : "";
-    const report = buildReport(result, url);
     try {
       await navigator.clipboard.writeText(report);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setCopyState("copied");
+      setTimeout(() => setCopyState("idle"), 2000);
     } catch {
-      // Clipboard API unavailable — older browser or non-secure context.
+      setCopyState("failed");
     }
   }
+
+  const copyButtonLabel =
+    copyState === "copied"
+      ? "Copied!"
+      : copyState === "failed"
+        ? "Copy failed"
+        : "Copy report";
 
   return (
     <main className="min-h-screen flex items-center justify-center px-6 py-16">
@@ -262,6 +272,24 @@ function ResultView({
         <p className="text-lg leading-relaxed text-muted mb-10">
           {result.rationale}
         </p>
+
+        <div className="mb-10">
+          <p className="text-sm uppercase tracking-wider text-muted mb-5">
+            Build this first
+          </p>
+          <ol className="space-y-4">
+            {result.nextSteps.map((step, i) => (
+              <li key={i} className="flex gap-4">
+                <span className="text-xs uppercase tracking-wider text-muted shrink-0 mt-1.5 tabular-nums">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="text-base text-ink leading-relaxed">
+                  {step}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
 
         {result.guidance.length > 0 && (
           <div className="mb-10">
@@ -305,7 +333,7 @@ function ResultView({
             onClick={handleCopy}
             className="inline-block bg-ink text-cream px-6 py-3 rounded-md font-medium hover:opacity-90 transition min-w-32"
           >
-            {copied ? "Copied!" : "Copy report"}
+            {copyButtonLabel}
           </button>
           <button
             onClick={onStartOver}
@@ -320,6 +348,20 @@ function ResultView({
             Home
           </Link>
         </div>
+        {copyState === "failed" && (
+          <div className="mt-6">
+            <p className="text-sm text-muted mb-2">
+              Clipboard access is blocked. Select the text below to copy
+              manually:
+            </p>
+            <textarea
+              readOnly
+              value={report}
+              onClick={(e) => e.currentTarget.select()}
+              className="w-full h-48 p-3 border border-line rounded-md text-sm font-mono bg-cream"
+            />
+          </div>
+        )}
         <p className="text-sm text-muted mt-10 leading-relaxed">
           Want to dig deeper?{" "}
           <Link

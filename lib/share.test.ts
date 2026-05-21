@@ -114,6 +114,7 @@ describe("buildReport", () => {
     title: "Agent",
     trace: "You said yes to Q5, Q6, Q7 — that's an agent shape.",
     rationale: "An agent runs a loop: act → observe → decide → repeat.",
+    nextSteps: [],
     guidance: [],
   };
 
@@ -146,6 +147,21 @@ describe("buildReport", () => {
   it("omits the guidance section when there are no items", () => {
     const report = buildReport(baseResult, "");
     expect(report).not.toContain("Also worth flagging");
+  });
+
+  it("includes the Build this first section when nextSteps is non-empty", () => {
+    const report = buildReport(
+      { ...baseResult, nextSteps: ["Step one.", "Step two."] },
+      "",
+    );
+    expect(report).toContain("Build this first:");
+    expect(report).toContain("1. Step one.");
+    expect(report).toContain("2. Step two.");
+  });
+
+  it("omits the Build this first section when nextSteps is empty", () => {
+    const report = buildReport(baseResult, "");
+    expect(report).not.toContain("Build this first");
   });
 
   it("appends URL when provided", () => {

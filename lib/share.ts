@@ -1,19 +1,21 @@
+import { questions } from "./questions";
 import type { Answers, Recommendation } from "./recommend";
 
-const QUESTION_IDS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
+const QUESTION_IDS = questions.map((q) => q.id);
+const CODE_PATTERN = new RegExp(`^[yn]{${QUESTION_IDS.length}}$`);
 
 export function encodeAnswers(answers: Answers): string | null {
   for (const id of QUESTION_IDS) {
     const a = answers[id];
     if (a !== "yes" && a !== "no") return null;
   }
-  return QUESTION_IDS.map((id) =>
-    answers[id] === "yes" ? "y" : "n",
-  ).join("");
+  return QUESTION_IDS.map((id) => (answers[id] === "yes" ? "y" : "n")).join(
+    "",
+  );
 }
 
 export function decodeAnswers(code: string): Answers | null {
-  if (!/^[yn]{9}$/.test(code)) return null;
+  if (!CODE_PATTERN.test(code)) return null;
   const result: Answers = {};
   QUESTION_IDS.forEach((id, i) => {
     result[id] = code[i] === "y" ? "yes" : "no";
@@ -27,6 +29,14 @@ export function buildReport(result: Recommendation, url: string): string {
   lines.push(result.trace);
   lines.push("");
   lines.push(result.rationale);
+
+  if (result.nextSteps.length > 0) {
+    lines.push("");
+    lines.push("Build this first:");
+    result.nextSteps.forEach((step, i) => {
+      lines.push(`${i + 1}. ${step}`);
+    });
+  }
 
   if (result.guidance.length > 0) {
     lines.push("");

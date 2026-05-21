@@ -15,6 +15,7 @@ export type Recommendation = {
   title: string;
   trace: string;
   rationale: string;
+  nextSteps: string[];
   guidance: Guidance[];
 };
 
@@ -23,12 +24,7 @@ export function recommend(answers: Answers): Recommendation {
   return { ...shape, guidance: buildGuidance(answers, shape.verdict) };
 }
 
-type Shape = {
-  verdict: Verdict;
-  title: string;
-  trace: string;
-  rationale: string;
-};
+type Shape = Omit<Recommendation, "guidance">;
 
 function problemShape(answers: Answers): Shape {
   if (answers[3] === "yes") {
@@ -38,6 +34,13 @@ function problemShape(answers: Answers): Shape {
       trace: "You said yes to Q3 — input goes in, output comes out, done.",
       rationale:
         "Don't reach for a framework. One prompt, one call, one response. Add structured output if you need a stable shape. You can always escalate later if real usage reveals you need more.",
+      nextSteps: [
+        "Write the prompt in plain language, with one or two example inputs and the outputs you'd want for them.",
+        "Define the output schema (Anthropic's structured outputs, OpenAI JSON schema, or a TypeScript type you parse against). Don't ask the model to \"please respond in JSON.\"",
+        "Pick 10–20 realistic inputs and run them through. Eyeball the outputs honestly — note anything wrong, weird, or close-but-not-quite.",
+        `Write down what "correct" looks like before tuning. A one-paragraph rubric beats a vibe check.`,
+        "Add one retry that feeds back the schema-validation error if the first call doesn't match. Then stop adding complexity.",
+      ],
     };
   }
 
@@ -56,8 +59,14 @@ function problemShape(answers: Answers): Shape {
       verdict: "agent",
       title: "Agent",
       trace: `You said ${parts.join(" and ")} — that's an agent shape.`,
-      rationale:
-        `An agent runs a loop: act → observe → decide → repeat until done. It's worth the cost when the path branches based on intermediate results, the tool order isn't predictable in advance, and stopping is itself a decision the system has to make. One thing to double-check: if your "dynamic" behavior is really a top-level classifier routing to fixed prompt chains, that's a routing workflow — not an agent. Budget upfront for evals and observability; they're not optional here.`,
+      rationale: `An agent runs a loop: act → observe → decide → repeat until done. It's worth the cost when the path branches based on intermediate results, the tool order isn't predictable in advance, and stopping is itself a decision the system has to make. One thing to double-check: if your "dynamic" behavior is really a top-level classifier routing to fixed prompt chains, that's a routing workflow — not an agent. Budget upfront for evals and observability; they're not optional here.`,
+      nextSteps: [
+        "Enumerate every tool the agent can call. For each one, mark whether it's reversible without human cleanup.",
+        `Write the stopping condition explicitly: when has the agent done enough? "When the task is done" is not a stopping condition.`,
+        `Build the eval before shipping: define what "good" means across a complete multi-step trajectory, and automate the grading.`,
+        "Cap max iterations (start with 5–10). Log every step's input, output, and chosen action — you'll need this when behavior surprises you.",
+        "Put a human-in-the-loop approval in front of every irreversible tool call. Don't gate on the model's confidence; gate on the action's blast radius.",
+      ],
     };
   }
 
@@ -74,6 +83,13 @@ function problemShape(answers: Answers): Shape {
       : "Mixed signals, but no strong agent case — start with a workflow.",
     rationale:
       "Chain LLM calls in a fixed order. Each step has a known input and a known output. You get most of the leverage of LLMs with very little of the cost or instability of an agent. Escalate to an agent only when you can point at a specific thing the workflow can't do.",
+    nextSteps: [
+      "Sketch the steps on paper before writing code. Name each step, its input, and its output. If you can't, you don't have a workflow — you have an agent in disguise.",
+      "Define an explicit schema for each intermediate step. The output of step N is the input of step N+1.",
+      "Implement each step as a separate function with its own test inputs. You should be able to test step 3 without running steps 1 and 2.",
+      "Wire the steps in a fixed sequence. No LLM call decides which step runs next — that's what makes it a workflow.",
+      "Decide per-step failure handling before you ship: retry, skip with a default, or fail loud? Don't punt this to the user.",
+    ],
   };
 }
 
