@@ -83,6 +83,7 @@ function QuizContent() {
 
   return (
     <QuestionView
+      key={current.id}
       question={current}
       index={index}
       total={total}
@@ -108,6 +109,7 @@ function QuestionView({
   onAnswer: (v: Answer) => void;
   onBack: () => void;
 }) {
+  const [exampleIndex, setExampleIndex] = useState(0);
   const partLabel =
     question.part === 1
       ? "Part 1 — Define the problem"
@@ -138,10 +140,41 @@ function QuestionView({
           <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-6">
             {question.text}
           </h2>
-          <p className="text-base leading-relaxed text-muted mb-10">
+          <p
+            className={`text-base leading-relaxed text-muted ${
+              question.examples.length > 1 ? "mb-3" : "mb-10"
+            }`}
+          >
             <span className="font-medium text-ink">Example.</span>{" "}
-            {question.example}
+            {question.examples[exampleIndex]}
           </p>
+          {question.examples.length > 1 && (
+            <div className="flex items-center gap-2 mb-10">
+              <div className="flex gap-1.5">
+                {question.examples.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setExampleIndex(i)}
+                    aria-label={`Show example ${i + 1}`}
+                    aria-current={i === exampleIndex ? "true" : undefined}
+                    className="group p-1"
+                  >
+                    <span
+                      className={`block w-2 h-2 rounded-full transition ${
+                        i === exampleIndex
+                          ? "bg-ink"
+                          : "bg-line group-hover:bg-muted"
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+              <span className="text-xs uppercase tracking-wider text-muted">
+                Example {exampleIndex + 1} of {question.examples.length}
+              </span>
+            </div>
+          )}
 
           <div className="flex gap-3">
             <button
