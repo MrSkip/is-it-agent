@@ -5,6 +5,7 @@ export type Question = {
   part: Part;
   text: string;
   examples: string[];
+  noHint?: string;
 };
 
 export const questions: Question[] = [
@@ -51,7 +52,9 @@ export const questions: Question[] = [
   {
     id: 5,
     part: 2,
-    text: "Does the system need to decide, based on intermediate results, what to do next — or does every run follow the same path regardless of what comes back?",
+    text: "Does the system need to decide, based on intermediate results, what to do next?",
+    noHint:
+      "Answer no if every run follows the same fixed path, regardless of what comes back.",
     examples: [
       `A Deep Research agent reads a source, decides whether to search for more, decides when it has enough to write up — the path branches with every finding. (Perplexity Deep Research, OpenAI deep research, and similar systems all use this pattern.)`,
       `A bug-fixing assistant reads the test output, decides whether to inspect the logs or open the source, and might re-run the test to verify. Every step's choice depends on what the last step revealed.`,
@@ -61,7 +64,9 @@ export const questions: Question[] = [
   {
     id: 6,
     part: 2,
-    text: "Does the task require calling tools in an order you can't predict in advance — or do the tools always run in the same order, every time?",
+    text: "Does the task require calling tools in an order you can't predict in advance?",
+    noHint:
+      "Answer no if the same tools fire in the same order every run.",
     examples: [
       `A coding assistant might read a file, run tests, edit code, read another file, run tests again — or might do that in reverse. You can't write the sequence down ahead of time.`,
       `A security incident responder pulls logs, reads alerts, queries the user directory, then reads more logs — the order depends entirely on what each query reveals about the next thread to pull.`,

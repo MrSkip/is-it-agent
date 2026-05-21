@@ -137,9 +137,16 @@ function QuestionView({
           <p className="text-sm uppercase tracking-wider text-muted mb-3">
             Q{question.id}
           </p>
-          <h2 className="font-serif text-3xl md:text-4xl leading-tight mb-6">
+          <h2
+            className={`font-serif text-3xl md:text-4xl leading-tight ${
+              question.noHint ? "mb-3" : "mb-6"
+            }`}
+          >
             {question.text}
           </h2>
+          {question.noHint && (
+            <p className="text-sm italic text-muted mb-6">{question.noHint}</p>
+          )}
           <p
             className={`text-base leading-relaxed text-muted ${
               question.examples.length > 1 ? "mb-3" : "mb-10"
