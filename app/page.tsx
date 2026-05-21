@@ -34,8 +34,7 @@ export default function Home() {
             className="underline underline-offset-4 hover:text-ink transition"
           >
             Building Effective Agents
-          </a>{" "}
-          (Dec 2024). New to the terms?{" "}
+          </a>. New to the terms?{" "}
           <Link
             href="/glossary"
             className="underline underline-offset-4 hover:text-ink transition"

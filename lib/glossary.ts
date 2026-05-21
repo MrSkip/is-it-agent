@@ -133,6 +133,6 @@ export const terms: Term[] = [
     name: "Deep Research agent",
     category: "examples",
     short: "The canonical 2025–2026 example of an agent in production.",
-    detail: `Perplexity Deep Research, OpenAI's o3 research mode, Anthropic's research agents. Reads sources, decides what to search for next, decides when it has enough material, writes up the answer. The path branches with every finding — you can't write the search order down ahead of time, which is the defining property of an agent.`,
+    detail: `Perplexity Deep Research, OpenAI deep research, Anthropic's research agents. Reads sources, decides what to search for next, decides when it has enough material, writes up the answer. The path branches with every finding — you can't write the search order down ahead of time, which is the defining property of an agent.`,
   },
 ];

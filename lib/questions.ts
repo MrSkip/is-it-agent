@@ -41,7 +41,7 @@ export const questions: Question[] = [
     part: 2,
     text: "Does the system need to decide, based on intermediate results, what to do next?",
     example:
-      `A Deep Research agent reads a source, decides whether to search for more, decides when it has enough to write up — the path branches with every finding. (Perplexity Deep Research, OpenAI's o3 research mode, and similar systems all use this pattern.)`,
+      `A Deep Research agent reads a source, decides whether to search for more, decides when it has enough to write up — the path branches with every finding. (Perplexity Deep Research, OpenAI deep research, and similar systems all use this pattern.)`,
   },
   {
     id: 6,
