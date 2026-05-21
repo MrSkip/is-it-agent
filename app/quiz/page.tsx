@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { questions, type Question } from "@/lib/questions";
 import {
   recommend,
@@ -9,6 +10,7 @@ import {
   type Answers,
   type Verdict,
 } from "@/lib/recommend";
+import { buildReport, decodeAnswers, encodeAnswers } from "@/lib/share";
 
 const verdictBlurb: Record<Verdict, { slug: string; label: string }> = {
   "single-call": {
@@ -20,9 +22,34 @@ const verdictBlurb: Record<Verdict, { slug: string; label: string }> = {
 };
 
 export default function QuizPage() {
+  return (
+    <Suspense fallback={<QuizLoading />}>
+      <QuizContent />
+    </Suspense>
+  );
+}
+
+function QuizLoading() {
+  return (
+    <main className="min-h-screen flex items-center justify-center px-6 py-12">
+      <p className="text-sm text-muted">Loading…</p>
+    </main>
+  );
+}
+
+function QuizContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [index, setIndex] = useState(0);
-  const [answers, setAnswers] = useState<Answers>({});
-  const [done, setDone] = useState(false);
+  const [answers, setAnswers] = useState<Answers>(() => {
+    const code = searchParams.get("a");
+    return (code ? decodeAnswers(code) : null) ?? {};
+  });
+  const [done, setDone] = useState(() => {
+    const code = searchParams.get("a");
+    return code !== null && decodeAnswers(code) !== null;
+  });
 
   const current = questions[index];
   const total = questions.length;
@@ -31,6 +58,8 @@ export default function QuizPage() {
     const next: Answers = { ...answers, [current.id]: value };
     setAnswers(next);
     if (index === total - 1) {
+      const code = encodeAnswers(next);
+      if (code) router.replace(`/quiz?a=${code}`);
       setDone(true);
     } else {
       setIndex(index + 1);
@@ -45,6 +74,7 @@ export default function QuizPage() {
     setIndex(0);
     setAnswers({});
     setDone(false);
+    router.replace("/quiz");
   }
 
   if (done) {
@@ -164,6 +194,19 @@ function ResultView({
   onStartOver: () => void;
 }) {
   const result = recommend(answers);
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    const report = buildReport(result, url);
+    try {
+      await navigator.clipboard.writeText(report);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API unavailable — older browser or non-secure context.
+    }
+  }
 
   return (
     <main className="min-h-screen flex items-center justify-center px-6 py-16">
@@ -224,10 +267,16 @@ function ResultView({
           </ul>
         </details>
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={handleCopy}
+            className="inline-block bg-ink text-cream px-6 py-3 rounded-md font-medium hover:opacity-90 transition min-w-32"
+          >
+            {copied ? "Copied!" : "Copy report"}
+          </button>
           <button
             onClick={onStartOver}
-            className="inline-block bg-ink text-cream px-6 py-3 rounded-md font-medium hover:opacity-90 transition"
+            className="inline-block bg-transparent border border-line text-ink px-6 py-3 rounded-md font-medium hover:border-ink transition"
           >
             Start over
           </button>
